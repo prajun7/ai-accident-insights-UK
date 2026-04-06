@@ -1,0 +1,19 @@
+
+============================================================
+FINAL PROJECT RESULTS SUMMARY
+============================================================
+Best Classification Model : Random Forest
+  Test Accuracy           : 62.59%
+  F1-Macro                : 0.4026
+
+Best Regression Model     : Random Forest
+  RMSE                    : 1.1513
+  R²                      : 0.3005
+
+K-Means Clusters Found    : 3
+DBSCAN Clusters Found     : 3 (excluding noise)
+
+Top Risk Factors (LDA)    : Speed_limit, Number_of_Vehicles, Vehicle_Manoeuvre
+Highest Risk Hour          : 16:00
+Highest Risk Road Type     : Single c/way
+============================================================
