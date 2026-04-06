@@ -2,3 +2,8 @@ UK_Accident_Project_MasterPrompt.md
 /data
 .DS_Store
 output/accidents_cleaned.csv
+output/y_final.csv
+output/X_pca.csv
+output/X_lda.csv
+output/X_final.csv
+output/lat_lon.csv
