@@ -40,22 +40,27 @@ def run():
     # Hour and IsNight are kept because visibility directly affects severity.
     keep_cols = [
         'Accident_Severity',
-        'Speed_limit', 'Road_Type', 'Light_Conditions',
-        'Weather_Conditions', 'Road_Surface_Conditions', 'Urban_or_Rural_Area',
-        'Junction_Detail', 'Junction_Control', 'Number_of_Vehicles',
-        'Hour', 'IsNight'
-        # Number_of_Casualties intentionally excluded — data leakage:
-        # casualty count is only known after the accident, same time as severity.
-        # Month, DayOfWeek, IsWeekend excluded — frequency features, not severity features.
+        # Road conditions
+        'Speed_limit', 'Road_Type', '1st_Road_Class',
+        'Light_Conditions', 'Weather_Conditions', 'Road_Surface_Conditions',
+        'Special_Conditions_at_Site', 'Carriageway_Hazards',
+        'Urban_or_Rural_Area', 'Junction_Detail', 'Junction_Control',
+        'Pedestrian_Crossing-Physical_Facilities',
+        # Accident context
+        'Number_of_Vehicles', 'Hour', 'IsNight',
+        # Vehicle features
+        'Vehicle_Type', 'Vehicle_Manoeuvre', 'Towing_and_Articulation',
+        # Driver features
+        'Age_Band_of_Driver', 'Sex_of_Driver', 'Journey_Purpose_of_Driver',
+        # Excluded — data leakage (known only after crash):
+        #   Number_of_Casualties, Casualty_Severity, Skidding_and_Overturning,
+        #   Hit_Object_in_Carriageway, Vehicle_Leaving_Carriageway, 1st_Point_of_Impact
+        # Excluded — frequency not severity predictors:
+        #   Month, DayOfWeek, IsWeekend
     ]
 
     keep_cols = [c for c in keep_cols if c in df.columns]
-    missing = [c for c in [
-        'Accident_Severity', 'Speed_limit', 'Road_Type', 'Light_Conditions',
-        'Weather_Conditions', 'Road_Surface_Conditions', 'Urban_or_Rural_Area',
-        'Junction_Detail', 'Junction_Control', 'Number_of_Vehicles',
-        'Hour', 'IsNight'
-    ] if c not in df.columns]
+    missing = [c for c in keep_cols if c not in df.columns]
     if missing:
         print(f"Warning — columns not found (skipped): {missing}")
 
@@ -63,6 +68,7 @@ def run():
     print(f"Shape after column selection: {df.shape}")
     print(f"Columns kept: {keep_cols}")
     print("\nNote: Month, DayOfWeek, IsWeekend removed (frequency not severity predictors).")
+    print("Note: Number_of_Casualties, crash outcome cols removed (data leakage).")
     print("Note: Number_of_Casualties removed (data leakage — known only after accident).")
 
     # ------------------------------------------------------------------
