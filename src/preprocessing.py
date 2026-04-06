@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 DATA_DIR   = os.path.join(os.path.dirname(__file__), '..', 'data')
-OUTPUT_DIR = os.path.join(os.path.dirname(__file__), '..', 'outputs')
+OUTPUT_DIR = os.path.join(os.path.dirname(__file__), '..', 'output')
 
 
 def run():
@@ -13,9 +13,9 @@ def run():
     # STEP 1 — LOAD DATA
     # ------------------------------------------------------------------
     print("\n--- STEP 1: Load Data ---")
-    accidents  = pd.read_csv(os.path.join(DATA_DIR, 'Accidents0515.csv'),  low_memory=False)
-    casualties = pd.read_csv(os.path.join(DATA_DIR, 'Casualties0515.csv'), low_memory=False)
-    vehicles   = pd.read_csv(os.path.join(DATA_DIR, 'Vehicles0515.csv'),   low_memory=False)
+    accidents  = pd.read_csv(os.path.join(DATA_DIR, 'Accidents0515.csv'),  low_memory=False, on_bad_lines='skip')
+    casualties = pd.read_csv(os.path.join(DATA_DIR, 'Casualties0515.csv'), low_memory=False, on_bad_lines='skip')
+    vehicles   = pd.read_csv(os.path.join(DATA_DIR, 'Vehicles0515.csv'),   low_memory=False, on_bad_lines='skip')
 
     for name, df in [('Accidents', accidents), ('Casualties', casualties), ('Vehicles', vehicles)]:
         print(f"\n{name}: shape={df.shape}")
@@ -53,13 +53,14 @@ def run():
 
     for col in df.columns:
         if df[col].dtype in [np.float64, np.int64, float, int]:
-            df[col].fillna(df[col].median(), inplace=True)
+            df[col] = df[col].fillna(df[col].median())
         else:
             mode_val = df[col].mode()
             if len(mode_val) > 0:
-                df[col].fillna(mode_val[0], inplace=True)
+                df[col] = df[col].fillna(mode_val[0])
 
-    print(f"\nNull count after imputation: {df.isnull().sum().sum()}")
+    null_after = df.isnull().sum().sum()
+    print(f"\nNull count after imputation: {null_after}")
 
     # ------------------------------------------------------------------
     # STEP 6 — REMOVE NULL TARGET

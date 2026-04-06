@@ -36,5 +36,5 @@ if __name__ == "__main__":
     visualizations.run()
 
     print("\n" + "=" * 60)
-    print("PIPELINE COMPLETE. Check the outputs/ folder.")
+    print("PIPELINE COMPLETE. Check the output/ folder.")
     print("=" * 60)
