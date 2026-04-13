@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Accident severity — prediction</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --card: #1a2332;
+      --text: #e7ecf3;
+      --muted: #8b9cb3;
+      --accent: #3d9cf0;
+      --accent-dim: #2a6fa8;
+      --fatal: #e85d5d;
+      --serious: #e9a23b;
+      --slight: #5dbe8a;
+      --border: #2a3544;
+      --radius: 12px;
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(ellipse 120% 80% at 50% -20%, #1e3a5f 0%, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 0.35rem;
+      letter-spacing: -0.02em;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    form {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+    }
+    .grid {
+      display: grid;
+      gap: 1rem;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    select {
+      appearance: none;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.65rem 0.85rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    select:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    button {
+      margin-top: 0.5rem;
+      width: 100%;
+      padding: 0.85rem 1rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(180deg, var(--accent) 0%, var(--accent-dim) 100%);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:disabled { opacity: 0.55; cursor: not-allowed; filter: none; }
+    .out {
+      margin-top: 1.25rem;
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      display: none;
+    }
+    .out.visible { display: block; }
+    .out h2 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .badge.fatal { background: rgba(232,93,93,0.25); color: var(--fatal); }
+    .badge.serious { background: rgba(233,162,59,0.25); color: var(--serious); }
+    .badge.slight { background: rgba(93,190,138,0.25); color: var(--slight); }
+    .probs { margin-top: 0.75rem; font-size: 0.9rem; color: var(--muted); }
+    .probs span { color: var(--text); }
+    .err { color: var(--fatal); font-size: 0.9rem; margin-top: 1rem; display: none; }
+    .err.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Predict accident severity</h1>
+    <p class="sub">Uses the same ten features as <code>X_final.csv</code> (STATS19-style codes).</p>
+    <form id="f" class="grid">
+      <label>Speed limit (mph)
+        <select name="Speed_limit" required>
+          <option value="0">0</option>
+          <option value="10">10</option>
+          <option value="15">15</option>
+          <option value="20">20</option>
+          <option value="30" selected>30</option>
+          <option value="40">40</option>
+          <option value="50">50</option>
+          <option value="60">60</option>
+          <option value="70">70</option>
+        </select>
+      </label>
+      <label>Number of vehicles
+        <select name="Number_of_Vehicles" required></select>
+      </label>
+      <label>Vehicle manoeuvre
+        <select name="Vehicle_Manoeuvre" required></select>
+      </label>
+      <label>Road type
+        <select name="Road_Type" required>
+          <option value="1">1 — Motorway</option>
+          <option value="2">2 — A(M)</option>
+          <option value="3">3 — A road</option>
+          <option value="6" selected>6 — Single carriageway</option>
+          <option value="7">7 — Slip road</option>
+          <option value="9">9 — Unknown</option>
+        </select>
+      </label>
+      <label>Night (visibility)
+        <select name="IsNight" required>
+          <option value="0" selected>0 — Day</option>
+          <option value="1">1 — Night</option>
+        </select>
+      </label>
+      <label>Urban or rural
+        <select name="Urban_or_Rural_Area" required>
+          <option value="1" selected>1 — Urban</option>
+          <option value="2">2 — Rural</option>
+          <option value="3">3 — Unallocated</option>
+        </select>
+      </label>
+      <label>Sex of driver
+        <select name="Sex_of_Driver" required>
+          <option value="1" selected>1 — Male</option>
+          <option value="2">2 — Female</option>
+          <option value="3">3 — Unknown</option>
+        </select>
+      </label>
+      <label>Junction detail
+        <select name="Junction_Detail" required></select>
+      </label>
+      <label>Age band of driver
+        <select name="Age_Band_of_Driver" required></select>
+      </label>
+      <label>Light conditions
+        <select name="Light_Conditions" required>
+          <option value="1" selected>1 — Daylight</option>
+          <option value="4">4 — Darkness: lights lit</option>
+          <option value="5">5 — Darkness: lights unlit</option>
+          <option value="6">6 — Darkness: no lighting</option>
+          <option value="7">7 — Darkness: lighting unknown</option>
+        </select>
+      </label>
+      <button type="submit" id="go">Predict</button>
+    </form>
+    <p class="err" id="err"></p>
+    <div class="out" id="out">
+      <h2>Prediction</h2>
+      <p><span class="badge" id="badge"></span></p>
+      <div class="probs" id="probs"></div>
+    </div>
+  </div>
+  <script>
+    const PREDICT_URL = "__PREDICT_URL__";
+
+    const vehicles = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,28,29,32,34,37,67];
+    const manoeuvres = [
+      [1,"Reversing"],[2,"Parked"],[3,"Waiting to go — held up"],[4,"Slowing or stopping"],[5,"Moving off"],
+      [6,"Turning left"],[7,"Waiting to turn left"],[8,"Turning right"],[9,"Waiting to turn right"],
+      [10,"Changing lane to left"],[11,"Changing lane to right"],[12,"Overtaking — offside (moving)"],
+      [13,"Overtaking — offside (stationary)"],[14,"Overtaking — nearside"],[15,"Ahead — left-hand bend"],
+      [16,"Ahead — right-hand bend"],[17,"Ahead — other"],[18,"U-turn / other"]
+    ];
+    const junctions = [
+      [0,"Not at junction (within 20 m)"],[1,"Roundabout"],[2,"Mini-roundabout"],[3,"T or staggered"],
+      [5,"Slip road"],[6,"Crossroads"],[7,"More than four arms"],[8,"Private entrance"],[9,"Other"]
+    ];
+    const ageBands = [
+      [1,"0–5"],[2,"6–10"],[3,"11–15"],[4,"16–20"],[5,"21–25"],[6,"26–35"],[7,"36–45"],
+      [8,"46–55"],[9,"56–65"],[10,"66–75"],[11,"Over 75"]
+    ];
+
+    function fillSelect(name, pairs, defVal) {
+      const sel = document.querySelector('[name="' + name + '"]');
+      pairs.forEach(function (p) {
+        const o = document.createElement('option');
+        o.value = String(p[0]);
+        o.textContent = p[0] + " — " + p[1];
+        if (String(p[0]) === String(defVal)) o.selected = true;
+        sel.appendChild(o);
+      });
+    }
+    fillSelect("Number_of_Vehicles", vehicles.map(function (v) { return [v, String(v) + " vehicles"]; }), "1");
+    fillSelect("Vehicle_Manoeuvre", manoeuvres, "17");
+    fillSelect("Junction_Detail", junctions, "0");
+    fillSelect("Age_Band_of_Driver", ageBands, "6");
+
+    document.getElementById("f").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const err = document.getElementById("err");
+      const out = document.getElementById("out");
+      const btn = document.getElementById("go");
+      err.classList.remove("visible");
+      out.classList.remove("visible");
+      const fd = new FormData(e.target);
+      const body = {};
+      ["Speed_limit","Number_of_Vehicles","Vehicle_Manoeuvre","Road_Type","IsNight","Urban_or_Rural_Area","Sex_of_Driver","Junction_Detail","Age_Band_of_Driver","Light_Conditions"].forEach(function (k) {
+        body[k] = parseFloat(String(fd.get(k)));
+      });
+      btn.disabled = true;
+      try {
+        const r = await fetch(PREDICT_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || r.statusText);
+        const badge = document.getElementById("badge");
+        const probs = document.getElementById("probs");
+        badge.textContent = j.label + " (" + j.prediction + ")";
+        badge.className = "badge " + (j.label === "Fatal" ? "fatal" : j.label === "Serious" ? "serious" : "slight");
+        probs.innerHTML = Object.keys(j.probabilities).map(function (k) {
+          return "<div>" + k + ": <span>" + (j.probabilities[k] * 100).toFixed(1) + "%</span></div>";
+        }).join("");
+        out.classList.add("visible");
+      } catch (x) {
+        err.textContent = x.message || String(x);
+        err.classList.add("visible");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

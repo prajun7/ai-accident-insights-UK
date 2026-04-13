@@ -12,3 +12,6 @@ output/feature_selection_and_classification_v1/X_lda.csv
 output/feature_selection_and_classification_v1/y_final.csv
 output/feature_selection_and_classification_v1/X_final.csv
 output/feature_selection_and_classification_v1/lat_lon.csv
+__pycache__/predict_server.cpython-313.pyc
+__pycache__/export_7_rf_model.cpython-313.pyc
+output/7_rf_model.joblib
